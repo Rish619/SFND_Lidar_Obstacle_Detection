@@ -1,17 +1,49 @@
 # Sensor Fusion Self-Driving Car Course
 
-<img src="media/ObstacleDetectionFPS.gif" width="700" height="400" />
+<img src="media/Result.gif" width="700" height="400" />
 
-### Welcome to the Sensor Fusion course for self-driving cars.
+### Welcome to the Sensor Fusion course first Project Lidar Obstacle Detection.
+* Ransac function build from scratch to perform plane identification : RansacPlane1
+  ```c++
+     template<typename PointT>
+	 std::unordered_set<int> ProcessPointClouds<PointT>::RansacPlane1(typename pcl::PointCloud<PointT>::Ptr cloud, int maxIterations, float distanceTol) 
+  ```
+* Cloud Segmentation function responsible for segmenting both plane(inliers passed by RanasacPlane1 function) and obstruction cloud which the input cloud minus all the inliers passed by the RansacPlane1: SegmentPlane
+  ```c++
+     template<typename PointT>
+	 std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> ProcessPointClouds<PointT>::SegmentPlane(typename pcl::PointCloud<PointT>::Ptr cloud, int maxIterations, float distanceThreshold)
+  ```
 
-In this course we will be talking about sensor fusion, whch is the process of taking data from multiple sensors and combining it to give us a better understanding of the world around us. we will mostly be focusing on two sensors, lidar, and radar. By the end we will be fusing the data from these two sensors to track multiple cars on the road, estimating their positions and speed.
+* Cloud Seperation being used by the Cloud Segmentation, this function subtracts inliers from the total input cloud and returns a pair of point clouds <obstruction cloud, plane cloud> : SeparateClouds
+  ```c++
+     template<typename PointT>
+     std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> ProcessPointClouds<PointT>::SeparateClouds(pcl::PointIndices::Ptr inliers, typename pcl::PointCloud<PointT>::Ptr cloud) 
+  ``` 
 
-**Lidar** sensing gives us high resolution data by sending out thousands of laser signals. These lasers bounce off objects, returning to the sensor where we can then determine how far away objects are by timing how long it takes for the signal to return. Also we can tell a little bit about the object that was hit by measuring the intesity of the returned signal. Each laser ray is in the infrared spectrum, and is sent out at many different angles, usually in a 360 degree range. While lidar sensors gives us very high accurate models for the world around us in 3D, they are currently very expensive, upwards of $60,000 for a standard unit.
+* Clustering the obstruction point cloud which returned by the SegmentPlane function, this function is : euclideanCluster
+  ```c++
+     template<typename PointT>
+	 std::vector<typename pcl::PointCloud<PointT>::Ptr> ProcessPointClouds<PointT>::euclideanCluster(typename pcl::PointCloud<PointT>::Ptr cloud, float distanceTol, int minsize, int maxsize)
+  ```
 
-**Radar** data is typically very sparse and in a limited range, however it can directly tell us how fast an object is moving in a certain direction. This ability makes radars a very pratical sensor for doing things like cruise control where its important to know how fast the car infront of you is traveling. Radar sensors are also very affordable and common now of days in newer cars.
+* Kdtree implementation from scratch for inserting and searching points in 3d space 
 
-**Sensor Fusion** by combing lidar's high resoultion imaging with radar's ability to measure velocity of objects we can get a better understanding of the sorrounding environment than we could using one of the sensors alone.
+## Evaluation/Observation Results
+* Filtering the input point cloud on an average took 4 milliseconds
 
+* Plane Segmentation on an average took 17 milliseconds
+
+* Clustering on an average took 2 milliseconds
+
+* FPS achieved on an average 190 
+
+## Hardware/Testing system
+* GPU: GeForce RTX 2060     Driver Version: 440.100      CUDA Version: 10.2  
+* CPU: Intel(R) Core(TM) i7-8700 CPU @ 3.20GHz
+* OS: Ubuntu 18.04.4 LTS
+
+## Memory Usage
+* GPU Core usage: 8MB, GPU MEM: 0%, CPU Core Usage: 100% , CPU Memory Usage: 148MB at a given instance by the environment process
 
 ## Installation
 
@@ -20,7 +52,7 @@ In this course we will be talking about sensor fusion, whch is the process of ta
 ```bash
 $> sudo apt install libpcl-dev
 $> cd ~
-$> git clone https://github.com/udacity/SFND_Lidar_Obstacle_Detection.git
+$> git clone https://github.com/Rish619/SFND_Lidar_Obstacle_Detection.git
 $> cd SFND_Lidar_Obstacle_Detection
 $> mkdir build && cd build
 $> cmake ..
